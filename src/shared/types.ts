@@ -50,6 +50,7 @@ export interface Session {
     picUrl?: string
     messages: Message[]
     copilotId?: string
+    isPinned?: boolean
 }
 
 export function createMessage(role: MessageRole = MessageRoleEnum.User, content: string = ''): Message {

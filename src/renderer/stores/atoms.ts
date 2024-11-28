@@ -66,7 +66,13 @@ export const sortedSessionsAtom = atom((get) => {
 })
 
 export function sortSessions(sessions: Session[]): Session[] {
-    return [...sessions].reverse()
+    return [...sessions].reverse().sort((a, b) => {
+        // 先比较是否置顶
+        if (a.isPinned === b.isPinned) {
+            return 0 // 如果都相同，保持原顺序
+        }
+        return a.isPinned ? -1 : 1 // 置顶的会话排在前面
+    })
 }
 
 const _currentSessionIdCachedAtom = atomWithStorage<string | null>('_currentSessionIdCachedAtom', null)

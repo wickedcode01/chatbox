@@ -75,6 +75,7 @@ export default function CopilotWindow(props: Props) {
             picUrl: copilot.picUrl,
             messages: msgs,
             copilotId: copilot.id,
+            isPinned: false,
         })
         trackingEvent('create_copilot_conversation', { event_category: 'user' })
     }

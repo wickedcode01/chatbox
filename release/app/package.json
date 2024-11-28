@@ -1,12 +1,12 @@
 {
     "name": "xyz.chatboxapp.ce",
     "productName": "xyz.chatboxapp.ce",
-    "version": "0.10.2",
+    "version": "1.0.0",
     "description": "A desktop client for multiple cutting-edge AI models",
     "author": {
-        "name": "Benn Huang",
-        "email": "tohuangbin@gmail.com",
-        "url": "https://github.com/Bin-Huang"
+        "name": "wickedcode",
+        "email": "",
+        "url": ""
     },
     "main": "./dist/main/main.js",
     "scripts": {

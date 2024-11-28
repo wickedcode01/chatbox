@@ -7,6 +7,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined'
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined'
 import DeleteIcon from '@mui/icons-material/Delete'
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined'
 import StyledMenu from './StyledMenu'
 import { useTranslation } from 'react-i18next'
 import * as sessionActions from '../stores/sessionActions'
@@ -24,6 +25,7 @@ function _SessionItem(props: Props) {
     const setChatConfigDialogSession = useSetAtom(atoms.chatConfigDialogAtom)
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
     const open = Boolean(anchorEl)
+    const [isHovered, setIsHovered] = React.useState(false)
     const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
         event.stopPropagation()
         event.preventDefault()
@@ -38,25 +40,38 @@ function _SessionItem(props: Props) {
     const theme = useTheme()
     const medianSize = theme.typography.pxToRem(24)
     // const smallSize = theme.typography.pxToRem(20)
+    const togglePin = () => {
+        sessionActions.modify({ ...session, isPinned: !session.isPinned }) // 切换置顶状态
+    }
     return (
         <>
             <MenuItem
                 key={session.id}
                 selected={selected}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
                 onClick={onClick}
                 sx={{ padding: '0.1rem', margin: '0.1rem' }}
                 className="group/session-item"
             >
                 <ListItemIcon>
-                    <IconButton color={'inherit'} onClick={onClick}>
-                        {session.picUrl ? (
-                            <Avatar
-                                sizes={medianSize}
-                                sx={{ width: medianSize, height: medianSize }}
-                                src={session.picUrl}
-                            />
+                    <IconButton color={'inherit'} onClick={togglePin}>
+                        {!isHovered && !session.isPinned ? (
+                            session.picUrl ? (
+                                <Avatar
+                                    sizes={medianSize}
+                                    sx={{ width: medianSize, height: medianSize }}
+                                    src={session.picUrl}
+                                />
+                            ) : (
+                                <ChatBubbleOutlineOutlinedIcon fontSize="small" />
+                            )
                         ) : (
-                            <ChatBubbleOutlineOutlinedIcon fontSize="small" />
+                            <PushPinOutlinedIcon
+                                aria-label="Toggle pin"
+                                fontSize="small"
+                                color={session.isPinned ? 'primary' : 'action'}
+                            />
                         )}
                     </IconButton>
                 </ListItemIcon>

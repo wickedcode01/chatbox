@@ -39,10 +39,11 @@ export default class Claude extends Base {
         this.defaultPrompt = store.get(atoms.settingsAtom).defaultPrompt || defaults.getDefaultPrompt()
     }
 
-    createMessage(model: string, max_tokens: number, messages: Message[] | object[], system: string, tools?: Tool[]) {
+    createMessage(model: string, messages: Message[] | object[], system: string, tools?: Tool[]) {
         return this.client.messages.stream({
             model,
-            max_tokens,
+            max_tokens: this.maxTokens,
+            temperature: this.temperature,
             messages: (messages as Message[]).map(({ content, role }) => ({
                 content,
                 role: role === 'system' ? 'user' : role,
@@ -61,6 +62,12 @@ export default class Claude extends Base {
         let search_query: string[] = []
         let tool_list: Tool[] = []
         const searchTag = settingActions.getSearchSwitch()
+        let system = this.defaultPrompt
+        // remap system prompt
+        if (messages[0].role == 'system') {
+            system = messages[0].content
+            messages.shift()
+        }
         if (searchTag) {
             tool_list.push({
                 name: 'search',
@@ -78,7 +85,7 @@ export default class Claude extends Base {
             })
         }
         return new Promise((reslove, reject) => {
-            const stream = this.createMessage(this.model, this.maxTokens, messages, this.defaultPrompt, tool_list)
+            const stream = this.createMessage(this.model, messages, system, tool_list)
 
             // stream.on('streamEvent', MessageStreamEvent => {})
             stream
@@ -110,7 +117,6 @@ export default class Claude extends Base {
                         // Re-run with search results
                         const searchStream = await this.createMessage(
                             this.model,
-                            this.maxTokens,
                             [
                                 ...messages,
                                 {
