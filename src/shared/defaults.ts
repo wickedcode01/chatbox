@@ -6,7 +6,10 @@ export function settings(): Settings {
         aiProvider: ModelProvider.OpenAI,
         openaiKey: '',
         apiHost: 'https://api.openai.com',
-
+        googleAPIKey: '',
+        googleCx: '',     
+        claudeApiKey: '', 
+        claudeModel: '',  
         azureApikey: '',
         azureDeploymentName: '',
         azureDalleDeploymentName: 'dall-e-3',

@@ -15,7 +15,6 @@ import _ from 'lodash'
 export interface Props {
     currentSessionId: string
     currentSessionType: SessionType
-    useSearchEngine: boolean
 }
 
 export default function InputBox(props: Props) {
