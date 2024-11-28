@@ -103,8 +103,6 @@ export function getSession(sessionId: string) {
 
 export function insertMessage(sessionId: string, msg: Message) {
     const store = getDefaultStore()
-    msg.wordCount = countWord(msg.content)
-    msg.tokenCount = estimateTokensFromMessages([msg])
     store.set(atoms.sessionsAtom, (sessions) =>
         sessions.map((s) => {
             if (s.id === sessionId) {
@@ -122,13 +120,8 @@ export function insertMessage(sessionId: string, msg: Message) {
 
 export function modifyMessage(sessionId: string, updated: Message, refreshCounting?: boolean) {
     const store = getDefaultStore()
-    if (refreshCounting) {
-        updated.wordCount = countWord(updated.content)
-        updated.tokenCount = estimateTokensFromMessages([updated])
-    }
-
-    updated.timestamp = new Date().getTime()
-
+    // do we need to update timestamp here?
+    // updated.timestamp = new Date().getTime()
     let hasHandled = false
     const handle = (msgs: Message[]) => {
         return msgs.map((m) => {
@@ -161,22 +154,17 @@ export async function submitNewUserMessage(params: {
     if (needGenerating) {
         newAssistantMsg.generating = true
         insertMessage(currentSessionId, newAssistantMsg)
-    }
-    if (needGenerating) {
         return generate(currentSessionId, newAssistantMsg)
     }
 }
 
+//  the function only run once when message is updating
 export async function generate(sessionId: string, targetMsg: Message) {
     const store = getDefaultStore()
     const settings = store.get(atoms.settingsAtom)
     const configs = await platform.getConfig()
     const session = getSession(sessionId)
     if (!session) {
-        return
-    }
-    const autoGenerateTitle = settingActions.getAutoGenerateTitle()
-    if (!autoGenerateTitle) {
         return
     }
     const placeholder = '...'
@@ -206,9 +194,12 @@ export async function generate(sessionId: string, targetMsg: Message) {
                     targetMsg = { ...targetMsg, content: text, cancel }
                     modifyMessage(sessionId, targetMsg)
                 }, 100)
+                // the return value of chat seems useless 
                 await model.chat(promptMsgs, throttledModifyMessage)
+
                 targetMsg = {
                     ...targetMsg,
+ 
                     generating: false,
                     cancel: undefined,
                     tokensUsed: estimateTokensFromMessages([...promptMsgs, targetMsg]),
@@ -273,7 +264,8 @@ async function _generateName(sessionId: string, modifyName: (sessionId: string, 
 }
 
 export async function generateName(sessionId: string) {
-    return _generateName(sessionId, modifyName)
+    const autoGenerateTitle = settingActions.getAutoGenerateTitle()
+    if (autoGenerateTitle) return _generateName(sessionId, modifyName)
 }
 
 function genMessageContext(settings: Settings, msgs: Message[]) {
@@ -315,17 +307,22 @@ function genMessageContext(settings: Settings, msgs: Message[]) {
 export function initEmptyChatSession(): Session {
     const store = getDefaultStore()
     const settings = store.get(atoms.settingsAtom)
+    const provider = settings.aiProvider
+    let messages: Message[] = []
+    switch (provider) {
+        case 'openai': messages = [{
+            id: uuidv4(),
+            role: 'system',
+            content: settings.defaultPrompt || defaults.getDefaultPrompt(),
+        },]
+            break;
+        default:
+    }
     return {
         id: uuidv4(),
-        name: 'Untitled',
+        name: new Date().toLocaleDateString()||'Untitled',
         type: 'chat',
-        messages: [
-            {
-                id: uuidv4(),
-                role: 'system',
-                content: settings.defaultPrompt || defaults.getDefaultPrompt(),
-            },
-        ],
+        messages,
     }
 }
 

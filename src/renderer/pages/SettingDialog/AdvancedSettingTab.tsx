@@ -18,6 +18,7 @@ import * as atoms from '../../stores/atoms'
 import storage, { StorageKey } from '../../storage'
 import { useState, useRef } from 'react'
 import platform from '../../packages/platform'
+import PasswordTextField from '../../components/PasswordTextField'
 
 interface Props {
     settingsEdit: Settings
@@ -30,6 +31,31 @@ export default function AdvancedSettingTab(props: Props) {
     const { t } = useTranslation()
     return (
         <Box>
+            <Accordion>
+                <AccordionSummary aria-controls="panel1a-content">
+                    <Typography>{t('Google Search Setting')}</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                    <PasswordTextField
+                        label={t('Search API key')}
+                        value={settingsEdit.googleAPIKey}
+                        setValue={(googleAPIKey) => {
+                            setSettingsEdit({ ...settingsEdit, googleAPIKey })
+                        }}
+                        placeholder="Input your google API key to enable online search"
+                    />
+                    <PasswordTextField
+                        label={t('Search Engine ID')}
+                        value={settingsEdit.googleCx}
+                        setValue={(googleCx) => {
+                            setSettingsEdit({ ...settingsEdit, googleCx })
+                        }}
+                        placeholder="Input your google Search Engine ID"
+                    />
+                </AccordionDetails>
+               
+            </Accordion>
+           
             <Accordion>
                 <AccordionSummary aria-controls="panel1a-content">
                     <Typography>{t('Network Proxy')}</Typography>

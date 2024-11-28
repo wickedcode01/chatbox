@@ -35,7 +35,8 @@ export const spellCheckAtom = focusAtom(settingsAtom, (optic) => optic.prop('spe
 export const allowReportingAndTrackingAtom = focusAtom(settingsAtom, (optic) => optic.prop('allowReportingAndTracking'))
 export const enableMarkdownRenderingAtom = focusAtom(settingsAtom, (optic) => optic.prop('enableMarkdownRendering'))
 export const autoGenerateTitleAtom = focusAtom(settingsAtom, (optic) => optic.prop('autoGenerateTitle'))
-
+// search config
+export const switchSearchAtom = focusAtom(settingsAtom, (optic) => optic.prop('searchSwitch'))
 export const licenseDetailAtom = focusAtom(settingsAtom, (optic) => optic.prop('licenseDetail'))
 
 // myCopilots

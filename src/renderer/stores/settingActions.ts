@@ -52,3 +52,8 @@ export function getAutoGenerateTitle() {
     const store = getDefaultStore()
     return store.get(atoms.autoGenerateTitleAtom)
 }
+
+export function getSearchSwitch(){
+    const store = getDefaultStore()
+    return store.get(atoms.switchSearchAtom)
+}

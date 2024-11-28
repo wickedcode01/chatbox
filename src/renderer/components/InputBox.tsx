@@ -5,19 +5,21 @@ import { useTranslation } from 'react-i18next'
 import * as atoms from '../stores/atoms'
 import { useSetAtom } from 'jotai'
 import * as sessionActions from '../stores/sessionActions'
+import * as settingActions from '../stores/settingActions'
 import {
     SendHorizontal,
     Settings2,
+    TextSearch
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import icon from '../static/icon.png'
-import { trackingEvent } from '@/packages/event'
 import MiniButton from './MiniButton'
 import _ from 'lodash'
 
 export interface Props {
     currentSessionId: string
     currentSessionType: SessionType
+    useSearchEngine: boolean 
 }
 
 export default function InputBox(props: Props) {
@@ -38,7 +40,6 @@ export default function InputBox(props: Props) {
             needGenerating,
         })
         setMessageInput('')
-        trackingEvent('send_message', { event_category: 'user' })
     }
 
     const minTextareaHeight = 66
@@ -70,6 +71,10 @@ export default function InputBox(props: Props) {
 
     const [easterEgg, setEasterEgg] = useState(false)
 
+    const handleToggleSearchEngine = () => {
+        settingActions.modify({ searchSwitch: !settingActions.getSearchSwitch()})
+    }
+
     return (
         <div className='pl-2 pr-4'
             style={{
@@ -88,6 +93,13 @@ export default function InputBox(props: Props) {
                             }}
                         >
                             <img className={cn('w-5 h-5', easterEgg ? 'animate-spin' : '')} src={icon} />
+                        </MiniButton>
+                        <MiniButton className='mr-2' style={{ color: settingActions.getSearchSwitch() ? theme.palette.success.main :theme.palette.text.primary }}  tooltipTitle={
+                            <div className='text-center inline-block'>
+                                <span>{t('Switch search eagine')}</span>
+                            </div>
+                        }  onClick={handleToggleSearchEngine}>
+                            <TextSearch size={22} strokeWidth={1} />
                         </MiniButton>
                         <MiniButton className='mr-2' style={{ color: theme.palette.text.primary }}
                             onClick={() => setChatConfigDialogSession(sessionActions.getCurrentSession())}

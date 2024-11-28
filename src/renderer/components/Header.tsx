@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Typography, useTheme } from '@mui/material'
-import SponsorChip from './SponsorChip'
+
 import * as atoms from '../stores/atoms'
 import { useAtomValue, useSetAtom } from 'jotai'
 import * as sessionActions from '../stores/sessionActions'
@@ -59,7 +59,6 @@ export default function Header(props: Props) {
                         </Typography>
                     }
                 </Typography>
-                <SponsorChip sessionId={currentSession.id} />
                 <Toolbar />
             </div>
         </div>

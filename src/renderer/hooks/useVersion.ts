@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import * as remote from '../packages/remote'
 import platform from '../packages/platform'
 
 export default function useVersion() {
@@ -13,9 +12,9 @@ export default function useVersion() {
             const version = await platform.getVersion()
             _setVersion(version)
             try {
-                const os = await platform.getPlatform()
-                const needUpdate = await remote.checkNeedUpdate(version, os, config, settings)
-                setNeedCheckUpdate(needUpdate)
+                // const os = await platform.getPlatform()
+                // const needUpdate = await remote.checkNeedUpdate(version, os, config, settings)
+                // setNeedCheckUpdate(needUpdate)
             } catch (e) {
                 console.log(e)
                 // setNeedCheckUpdate(true)

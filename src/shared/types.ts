@@ -62,20 +62,27 @@ export function createMessage(role: MessageRole = MessageRoleEnum.User, content:
 }
 
 export enum ModelProvider {
-    ChatboxAI = 'chatbox-ai',
     OpenAI = 'openai',
+    Claude = 'claude',
     Ollama = 'ollama',
     SiliconFlow = 'silicon-flow',
 }
 
 export interface ModelSettings {
     aiProvider: ModelProvider
-
+    // google search API key
+    googleAPIKey: string
+    googleCx:string
     // openai
     openaiKey: string
     apiHost: string
     model: Model | 'custom-model'
     openaiCustomModel?: string
+    
+    // claude settings
+    claudeApiKey: string
+    claudeApiHost?: string
+    claudeModel: string
 
     // azure
     azureEndpoint: string
@@ -114,7 +121,8 @@ export interface Settings extends ModelSettings {
     showTokenUsed?: boolean
     showModelName?: boolean
     showMessageTimestamp?: boolean
-
+    // search switch
+    searchSwitch?:boolean
     theme: Theme
     language: Language
     languageInited?: boolean
