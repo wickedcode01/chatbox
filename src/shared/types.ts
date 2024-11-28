@@ -72,13 +72,13 @@ export interface ModelSettings {
     aiProvider: ModelProvider
     // google search API key
     googleAPIKey: string
-    googleCx:string
+    googleCx: string
     // openai
     openaiKey: string
     apiHost: string
     model: Model | 'custom-model'
     openaiCustomModel?: string
-    
+
     // claude settings
     claudeApiKey: string
     claudeApiHost?: string
@@ -122,7 +122,7 @@ export interface Settings extends ModelSettings {
     showModelName?: boolean
     showMessageTimestamp?: boolean
     // search switch
-    searchSwitch?:boolean
+    searchSwitch?: boolean
     theme: Theme
     language: Language
     languageInited?: boolean

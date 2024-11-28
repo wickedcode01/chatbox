@@ -55,7 +55,7 @@ export const AIModelProviderMenuOptionList = [
         value: ModelProvider.Claude,
         label: aiProviderNameHash[ModelProvider.Claude],
         disabled: false,
-    }
+    },
 ]
 
 export function getModelDisplayName(settings: Settings, sessionType: SessionType): string {

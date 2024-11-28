@@ -15,7 +15,7 @@ interface ModelConfigProps {
 
 export default function ClaudeSetting({ settingsEdit, setSettingsEdit }: ModelConfigProps) {
     const { t } = useTranslation()
-    
+
     return (
         <Box>
             <PasswordTextField
@@ -45,7 +45,7 @@ export default function ClaudeSetting({ settingsEdit, setSettingsEdit }: ModelCo
                     }}
                 />
             </>
-            
+
             <Accordion>
                 <AccordionSummary aria-controls="panel1a-content">
                     <Typography>
