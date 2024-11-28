@@ -3,68 +3,12 @@
   <a href="./doc/README-CN.md">简体中文</a>
 </p>
 
-This is the repository for the Chatbox Community Edition, open-sourced under the GPLv3 license. For most users, I recommend using the Chatbox Official Edition (closed-source). It's still completely free, easy to install, and supports more of the latest features. You can get it below:
+This is the repository for the Chatbox Community Edition, open-sourced under the GPLv3 license. 
 
-### Download for Desktop
+Wickedcode: Hey folks, this is wicked. I've modified the code to add support for Claude and online search.
 
-<table style="width: 100%">
-  <tr>
-    <td width="25%" align="center">
-      <b>Windows</b>
-    </td>
-    <td width="25%" align="center" colspan="2">
-      <b>MacOS</b>
-    </td>
-    <td width="25%" align="center">
-      <b>Linux</b>
-    </td>
-  </tr>
-  <tr style="text-align: center">
-    <td align="center" valign="middle">
-      <a href='https://chatboxai.app/?c=download-windows'>
-        <img src='./doc/statics/windows.png' style="height:24px; width: 24px" />
-        <br />
-        <b>Setup.exe</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://chatboxai.app/?c=download-mac-intel'>
-        <img src='./doc/statics/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>Intel</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://chatboxai.app/?c=download-mac-aarch'>
-        <img src='./doc/statics/mac.png' style="height:24px; width: 24px" />
-        <br />
-        <b>M1/M2</b>
-      </a>
-    </td>
-    <td align="center" valign="middle">
-      <a href='https://chatboxai.app/?c=download-linux'>
-        <img src='./doc/statics/linux.png' style="height:24px; width: 24px" />
-        <br />
-        <b>AppImage</b>
-      </a>
-    </td>
-  </tr>
-</table>
+You can also visit the original project for more details.
 
-### Download for iOS/Android
-
-<a href='https://apps.apple.com/app/chatbox-ai/id6471368056' style='margin-right: 4px'>
-<img src='./doc/statics/app_store.webp' style="height:38px;" />
-</a>
-<a href='https://play.google.com/store/apps/details?id=xyz.chatboxapp.chatbox' style='margin-right: 4px'>
-<img src='./doc/statics/google_play.png' style="height:38px;" />
-</a>
-<a href='https://chatboxai.app/install?download=android_apk' style='margin-right: 4px; display: inline-flex; justify-content: center'>
-<img src='./doc/statics/android.png' style="height:28px; display: inline-block" />
-.APK
-</a>
-
-For more information: [chatboxai.app](https://chatboxai.app/)
 
 ---
 
@@ -236,22 +180,6 @@ npm run package
 ```bash
 npm run package:all
 ```
-
-## Buy Me a Coffee
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/benn)
-
-| Paypal                                            | Wechat Pay                                      | Ali Pay                                      |
-| ------------------------------------------------- | ----------------------------------------------- | -------------------------------------------- |
-| [**`Paypal`**](https://www.paypal.me/tobennhuang) | <img src="./doc/statics/wechat_pay.JPG" height="240" /> | <img src="./doc/statics/ali_pay.PNG" height="240" /> |
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Bin-Huang/chatbox&type=Date)](https://star-history.com/#Bin-Huang/chatbox&Date)
-
-## Contact
-
-[Twitter](https://twitter.com/benn_huang) | [Email](mailto:tohuangbin@gmail.com) | [Blog](https://bennhuang.com)
 
 ## License
 
