@@ -10,12 +10,28 @@ export default function MessageList(props: Props) {
     const currentSession = useAtomValue(atoms.currentSessionAtom)
     const currentMessageList = useAtomValue(atoms.currentMessageListAtom)
     const ref = useRef<HTMLDivElement | null>(null)
+    const scrollPositionRef = useRef<{ [key: string]: number }>({})
     const [, setMessageListRef] = useAtom(atoms.messageListRefAtom)
     useEffect(() => {
         setMessageListRef(ref)
     }, [ref])
+    useEffect(() => {
+        if (ref.current && scrollPositionRef.current[currentSession.id] !== undefined) {
+            // recover the scroll position
+            ref.current.scrollTop = scrollPositionRef.current[currentSession.id]
+        } else if (ref.current) {
+            // if memory value is null, scroll to bottom
+            ref.current.scrollTop = ref.current.scrollHeight
+        }
+    }, [currentSession])
+    const handleScroll = () => {
+        if (ref.current) {
+            // record the scroll position
+            scrollPositionRef.current[currentSession.id] = ref.current.scrollTop
+        }
+    }
     return (
-        <div className="overflow-y-auto w-full h-full pr-0 pl-0" ref={ref}>
+        <div className="overflow-y-auto w-full h-full pr-0 pl-0" ref={ref} onScroll={handleScroll}>
             {currentMessageList.map((msg, index) => (
                 <Message
                     id={msg.id}

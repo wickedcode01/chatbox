@@ -20,6 +20,8 @@ html > body {
         Arial, sans-serif; */
     /* padding: 0; */
     margin: auto;
+    /* fix bug */
+    overflow: hidden;
 }
 
 html[data-theme='dark'] {
