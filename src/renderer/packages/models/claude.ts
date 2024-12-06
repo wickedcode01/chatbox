@@ -53,13 +53,44 @@ export default class Claude extends Base {
                                 type: 'string',
                                 description: 'The search query',
                             },
+                            category:{
+                                type: 'string',
+                                enum: [ // Added enum to specify allowed values
+                                    'company',
+                                    'research paper',
+                                    'news article',
+                                    'linkedin profile',
+                                    'github',
+                                    'tweet',
+                                    'movie',
+                                    'song',
+                                    'personal site',
+                                    'pdf',
+                                    'financial report'
+                                ],
+                                description:'A data category to focus on, with higher comprehensivity and data cleanliness.'
+                            },
+                            includeDomains:{
+                                type:'array',
+                                items:{
+                                    type:'string'
+                                },
+                                description:'List of domains to include in the search. If specified, results will only come from these domains.'
+                            },
+                            excludeDomains:{
+                                type: 'array',
+                                items: {
+                                    type: 'string'
+                                },
+                                description:'List of domains to exclude in the search. If specified, results will not include any from these domains.'
+                            },
                         },
                         required: ['query'],
                     },
                 },
                 {
                     name: 'browse',
-                    description: 'Browse the internet by URL links.',
+                    description: 'Browse the website page by URL links. You also can use the tool to view the detail of search results',
                     input_schema: {
                         type: 'object',
                         properties: {
@@ -101,6 +132,9 @@ export default class Claude extends Base {
     ): Promise<any> {
         let result = ''
         try {
+            if ( this.toolCallCount> this.maxToolCallCounts){
+                throw Error('exceed the maxmiunm tool calls')
+            }
             // remap system prompt
             if (messages[0].role == 'system') {
                 const system = messages[0].content
@@ -153,11 +187,11 @@ export default class Claude extends Base {
                                     const inputObj = JSON.parse(input)
                                     const { name, id } = toolCall
                                     console.log('Tool input:', inputObj)
-
+                                    this.toolCallCount+=1
                                     let toolResult = ''
                                     switch (name) {
                                         case 'search':
-                                            toolResult = await performSearch(2, inputObj)
+                                            toolResult = await performSearch(1, inputObj)
                                             break
                                         case 'browse':
                                             toolResult = await browse(inputObj.urls, inputObj)

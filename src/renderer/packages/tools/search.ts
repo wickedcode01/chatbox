@@ -36,28 +36,34 @@ const exaSearch = async (input: InputObj) => {
     const store = getDefaultStore()
     const settings = store.get(atoms.settingsAtom)
     const { exaAPIKey } = settings
-    const { query, num } = input
+    const { num } = input
     console.log(input)
     const options = {
         method: 'POST',
         headers: { 'x-api-key': exaAPIKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            query: query,
+            ...input,
             type: 'keyword', // available parameters: auto, neural, keyword
             numResults: num ?? 5,
+            contents:{
+                text:{
+                    maxCharacters: 5000
+                },
+                // summary: true
+            }
             // useAutoprompt: false,
             // category: "company",
-            // includeDomains: ["example.com"], // 包含的域名
-            // excludeDomains: ["excludedomain.com"], // 排除的域名
-            // startCrawlDate: "2023-01-01T00:00:00.000Z", // 开始爬取日期
-            // endCrawlDate: "2023-12-31T00:00:00.000Z", // 结束爬取日期
-            // includeText: ["keyword"], // 包含的文本
-            // excludeText: ["excluded_keyword"], // 排除的文本
+            // includeDomains: ["example.com"], 
+            // excludeDomains: ["excludedomain.com"], 
+            // startCrawlDate: "2023-01-01T00:00:00.000Z", 
+            // endCrawlDate: "2023-12-31T00:00:00.000Z", 
+            // includeText: ["keyword"], 
+            // excludeText: ["excluded_keyword"], 
         }),
     }
     const response = await fetch('https://api.exa.ai/search', options)
     const data = await response.json()
-    return data
+    return data.results
 }
 interface InputObj {
     query: string
