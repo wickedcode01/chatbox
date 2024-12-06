@@ -2,7 +2,7 @@ import Base, { onResultChange } from './base'
 import { Message, ModelSettings } from '../../../shared/types'
 import { ApiError, NetworkError, BaseError } from './errors'
 import Anthropic from '@anthropic-ai/sdk'
-import { performSearch } from '../tools/search'
+import { performSearch, browse } from '../tools/index'
 import * as atoms from '../../stores/atoms'
 import { getDefaultStore } from 'jotai'
 import * as defaults from '../../../shared/defaults'
@@ -12,7 +12,8 @@ export const claudeModelConfigs = {
     'claude-3-opus-20240229': { maxTokens: 4096 },
     'claude-3-sonnet-20240229': { maxTokens: 4096 },
     'claude-3-haiku-20240307': { maxTokens: 4096 },
-    'claude-3-5-haiku-latest': { maxTokens: 4096 },
+    'claude-3-5-haiku-latest': { maxTokens: 8192 },
+    'claude-3-5-sonnet-latest': { maxTokens: 8192 },
 } as const
 
 export type Model = keyof typeof claudeModelConfigs
@@ -24,7 +25,9 @@ export default class Claude extends Base {
     private temperature: number
     private maxTokens: number
     private defaultPrompt: string
-
+    private tool_list: Anthropic.Tool[] = []
+    private toolCallCount: number = 0 // 新增计数器
+    private maxToolCallCounts: number = 3 // 设置最大调用次数
     constructor(settings: ModelSettings) {
         super()
         this.client = new Anthropic({
@@ -37,10 +40,47 @@ export default class Claude extends Base {
         this.maxTokens = claudeModelConfigs[settings.claudeModel as Model].maxTokens
         const store = getDefaultStore()
         this.defaultPrompt = store.get(atoms.settingsAtom).defaultPrompt || defaults.getDefaultPrompt()
+        const searchTag = settingActions.getSearchSwitch()
+        if (searchTag) {
+            this.tool_list = [
+                {
+                    name: 'search',
+                    description: 'Search the internet for current information.',
+                    input_schema: {
+                        type: 'object',
+                        properties: {
+                            query: {
+                                type: 'string',
+                                description: 'The search query',
+                            },
+                        },
+                        required: ['query'],
+                    },
+                },
+                {
+                    name: 'browse',
+                    description: 'Browse the internet by URL links.',
+                    input_schema: {
+                        type: 'object',
+                        properties: {
+                            urls: {
+                                type: 'array',
+                                description: 'The array of urls that you want to browse',
+                            },
+                            includeHtmlTags: {
+                                type: 'boolean',
+                                description: 'Whether return HTML tags',
+                            },
+                        },
+                        required: ['urls'],
+                    },
+                },
+            ]
+        }
     }
 
-    createMessage(model: string, messages: Message[] | object[], system: string, tools?: Tool[]) {
-        return this.client.messages.stream({
+    async createMessage(model: string, messages: Message[] | object[], system: string, tools?: Anthropic.Tool[]) {
+        return await this.client.messages.create({
             model,
             max_tokens: this.maxTokens,
             temperature: this.temperature,
@@ -49,118 +89,145 @@ export default class Claude extends Base {
                 role: role === 'system' ? 'user' : role,
             })),
             system,
+            stream: true,
             tools,
         })
     }
 
     async callChatCompletion(
-        messages: Message[],
+        messages: Message[] | Anthropic.Message[],
         signal?: AbortSignal,
         onResultChange?: onResultChange
-    ): Promise<string> {
+    ): Promise<any> {
         let result = ''
-        let search_query: string[] = []
-        let tool_list: Tool[] = []
-        const searchTag = settingActions.getSearchSwitch()
-        let system = this.defaultPrompt
-        // remap system prompt
-        if (messages[0].role == 'system') {
-            system = messages[0].content
-            messages.shift()
-        }
-        if (searchTag) {
-            tool_list.push({
-                name: 'search',
-                description: 'Search the internet for current information.',
-                input_schema: {
-                    type: 'object',
-                    properties: {
-                        query: {
-                            type: 'string',
-                            description: 'The search query',
-                        },
-                    },
-                    required: ['query'],
-                },
-            })
-        }
-        return new Promise((reslove, reject) => {
-            const stream = this.createMessage(this.model, messages, system, tool_list)
+        try {
+            // remap system prompt
+            if (messages[0].role == 'system') {
+                const system = messages[0].content
+                this.defaultPrompt = system
+                messages.shift()
+            }
+            let pendingToolCalls: {
+                toolCall: any
+                input: string
+            }[] = []
+            let currentToolCall
+            let currentInput = ''
+            const stream = await this.createMessage(this.model, messages, this.defaultPrompt, this.tool_list)
 
-            // stream.on('streamEvent', MessageStreamEvent => {})
-            stream
-                .on('text', (text: string) => {
-                    result += text
-                    onResultChange?.(result)
-                })
-                .on('contentBlock', (content: Record<string, any>) => {
-                    const { type } = content
-                    if (type == 'tool_use') {
-                        const { name, input } = content
-                        switch (name) {
-                            case 'search':
-                                search_query.push(input)
-
-                                break
-                            default:
+            for await (const messageStreamEvent of stream) {
+                switch (messageStreamEvent.type) {
+                    case 'content_block_delta':
+                        if (messageStreamEvent.delta.type === 'text_delta') {
+                            result += messageStreamEvent.delta.text
+                            onResultChange?.(result)
+                        } else if (messageStreamEvent.delta.type === 'input_json_delta') {
+                            if (currentToolCall) {
+                                currentInput += messageStreamEvent.delta.partial_json
+                            }
                         }
-                    }
-                })
-                .on('end', async () => {
-                    if (searchTag && search_query.length > 0) {
-                        const results = await Promise.all(
-                            search_query.map(async (query) => [...(await performSearch(query))])
-                        ).catch((err) => {
-                            reject(err)
-                        })
+                        break
+                    case 'content_block_start':
+                        if (messageStreamEvent.content_block.type === 'tool_use') {
+                            currentToolCall = messageStreamEvent.content_block
+                            currentInput = ''
+                        }
+                        break
+                    case 'content_block_stop':
+                        if (currentToolCall && currentInput) {
+                            pendingToolCalls.push({
+                                toolCall: currentToolCall,
+                                input: currentInput,
+                            })
+                            currentToolCall = null
+                            currentInput = ''
+                        }
+                        break
+                    case 'message_stop':
+                        console.log(pendingToolCalls)
+                        if (pendingToolCalls.length > 0) {
+                            let tool_results: any = { role: 'user', content: [] }
+                            let tool_calling: any = { role: 'assistant', content: [] }
+                            for (const { toolCall, input } of pendingToolCalls) {
+                                try {
+                                    const inputObj = JSON.parse(input)
+                                    const { name, id } = toolCall
+                                    console.log('Tool input:', inputObj)
 
-                        // Re-run with search results
-                        const searchStream = await this.createMessage(
-                            this.model,
-                            [
-                                ...messages,
+                                    let toolResult = ''
+                                    switch (name) {
+                                        case 'search':
+                                            toolResult = await performSearch(2, inputObj)
+                                            break
+                                        case 'browse':
+                                            toolResult = await browse(inputObj.urls, inputObj)
+                                            break
+                                        default:
+                                            console.log('Unsupported tool:', name)
+                                            continue
+                                    }
+                                    tool_results.content.push({
+                                        type: 'tool_result',
+                                        tool_use_id: id,
+                                        content: JSON.stringify(toolResult),
+                                    })
+                                    tool_calling.content.push({
+                                        type: 'tool_use',
+                                        id,
+                                        name,
+                                        input: inputObj,
+                                    })
+
+                                    break
+                                } catch (error) {
+                                    console.error('Error processing tool input:', error)
+                                    throw error
+                                }
+                            } // 清理当前工具调用的状态
+                            pendingToolCalls = []
+                            // 更新消息数组
+                            messages = [
+                                ...messages.map(({ role, content }) => ({ role, content })),
+                                tool_calling,
+                                tool_results,
                                 {
                                     role: 'user',
-                                    content:
-                                        "You are an AI assistant tasked with answering user questions based on provided search results. Use the search results to create an accurate and concise answer. Include in-text citations for references, linking directly to the sources. Adjust the answer's language to match the user's query language." +
-                                        'Output Format Example:' +
-                                        'Answer based on search results, with in-text citations like [1](https://example.com). \n' +
-                                        '--- \n ### References \n' +
-                                        '1. ** [Title 1](https://example.com)**: Brief explanation or key points from the source. \n 2. ** [Title 2](https://example.com)**: Brief explanation or key points from the source. \n' +
-                                        `Here is search result: ${JSON.stringify(results)}`,
+                                    content: `You are an AI assistant tasked with answering user queries based on tool results. 
+                                        Your goal is to provide informative answers with proper citations and references. 
+
+When formulating your response, follow these guidelines:
+1. Use information from the search results to answer the query.
+2. Include in-text citations for each piece of information you use. Citations should be in the format [1], [2], etc.
+3. Provide a "References" section at the end of your answer, listing all the sources you cited.
+4. Use Markdown format.
+
+Here's an example of how your response should be formatted:
+
+<example_response>
+The Earth orbits around the Sun in an elliptical path [1](https://example.com). This orbit takes approximately 365.25 days to complete, which is why we have leap years every four years [2](https://example.com).
+
+**References**:
+[Source 1][1](https://example.com)
+[Source 2][2](https://example.com)
+</example_response>
+
+Lastly, don't forget to adjust the answer's language to match the user's query language.
+Now, please answer the user query using the tool results and formatting your response as instructed`,
                                 },
-                            ],
-                            this.defaultPrompt
-                        )
+                            ]
+                            // 递归调用以继续对话
+                            return await this.callChatCompletion(messages, signal, onResultChange)
+                        }
+                }
+            }
 
-                        searchStream
-                            .on('text', (text: string) => {
-                                result += text
-                                onResultChange?.(result)
-                                reslove(result)
-                            })
-                            .on('error', (err) => reject(err))
-                    } else {
-                        reslove(result)
-                    }
-                })
-                .on('error', (err) => {
-                    if (err instanceof Anthropic.APIError) {
-                        reject(new ApiError(err.message))
-                    } else {
-                        reject(err)
-                    }
-                })
-        })
-    }
-}
-
-type Tool = {
-    name: string
-    description: string
-    input_schema: {
-        type: string
-        properties: object
-        required: ['query']
+            return result
+        } catch (err) {
+            if (err instanceof Anthropic.APIError) {
+                throw new ApiError(err.message)
+            } else {
+                throw err
+            }
+        }
     }
 }

@@ -349,3 +349,21 @@ export function getCurrentMessages() {
     const store = getDefaultStore()
     return store.get(atoms.currentMessageListAtom)
 }
+
+// export function deleteMessageinCurrentSession(id: string) {
+//     const store = getDefaultStore()
+//     const currentList = store.get(atoms.currentMessageListAtom)
+//     const newMessages = currentList.filter(i=>i.id!==id)
+//     const sessions = store.get(atoms.sessionsAtom)
+//     const currentSession = store.get(atoms.currentSessionAtom)
+//     console.log('delete',id)
+//     // store.set(atoms.sessionsAtom, sessions.map(i=>{
+//     //     if (i.id === currentSession.id) {
+//     //         currentSession.messages = newMessages
+//     //         return currentSession
+//     //     } else {
+//     //         return i
+//     //     }
+//     // }))
+//     store.set(atoms.currentMessageListAtom,newMessages)
+// }

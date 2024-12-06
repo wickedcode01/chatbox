@@ -74,6 +74,8 @@ export interface ModelSettings {
     // google search API key
     googleAPIKey: string
     googleCx: string
+    // exa search engine
+    exaAPIKey: string
     // openai
     openaiKey: string
     apiHost: string

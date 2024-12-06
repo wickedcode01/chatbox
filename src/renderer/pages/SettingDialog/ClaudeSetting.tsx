@@ -7,7 +7,7 @@ import PasswordTextField from '../../components/PasswordTextField'
 import TextFieldReset from '@/components/TextFieldReset'
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { models } from '../../packages/models/claude'
-
+import MaxContextMessageCountSlider from '../../components/MaxContextMessageCountSlider'
 interface ModelConfigProps {
     settingsEdit: ModelSettings
     setSettingsEdit: (settings: ModelSettings) => void
@@ -71,6 +71,10 @@ export default function ClaudeSetting({ settingsEdit, setSettingsEdit }: ModelCo
                     <TemperatureSlider
                         value={settingsEdit.temperature}
                         onChange={(v) => setSettingsEdit({ ...settingsEdit, temperature: v })}
+                    />
+                    <MaxContextMessageCountSlider
+                        value={settingsEdit.openaiMaxContextMessageCount}
+                        onChange={(v) => setSettingsEdit({ ...settingsEdit, openaiMaxContextMessageCount: v })}
                     />
                 </AccordionDetails>
             </Accordion>

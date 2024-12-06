@@ -23,7 +23,7 @@ export default function AdvancedSettingTab(props: Props) {
         <Box>
             <Accordion>
                 <AccordionSummary aria-controls="panel1a-content">
-                    <Typography>{t('Google Search Setting')}</Typography>
+                    <Typography>{t('RAG Settings')}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                     <PasswordTextField
@@ -32,7 +32,7 @@ export default function AdvancedSettingTab(props: Props) {
                         setValue={(googleAPIKey) => {
                             setSettingsEdit({ ...settingsEdit, googleAPIKey })
                         }}
-                        placeholder="Input your google API key to enable online search"
+                        placeholder="Input your google API key"
                     />
                     <PasswordTextField
                         label={t('Search Engine ID')}
@@ -41,6 +41,14 @@ export default function AdvancedSettingTab(props: Props) {
                             setSettingsEdit({ ...settingsEdit, googleCx })
                         }}
                         placeholder="Input your google Search Engine ID"
+                    />
+                    <PasswordTextField
+                        label={t('exa API key')}
+                        value={settingsEdit.exaAPIKey}
+                        setValue={(exaAPIKey) => {
+                            setSettingsEdit({ ...settingsEdit, exaAPIKey })
+                        }}
+                        placeholder="Input your exa API key to enable online search and web browse"
                     />
                 </AccordionDetails>
             </Accordion>

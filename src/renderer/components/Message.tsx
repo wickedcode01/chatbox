@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import Box from '@mui/material/Box'
 import Avatar from '@mui/material/Avatar'
-import { Typography, Grid, useTheme } from '@mui/material'
+import { Typography, Grid, useTheme, IconButton } from '@mui/material'
 import PersonIcon from '@mui/icons-material/Person'
 import SmartToyIcon from '@mui/icons-material/SmartToy'
 import SettingsIcon from '@mui/icons-material/Settings'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import { useTranslation } from 'react-i18next'
 import { Message, SessionType } from '../../shared/types'
 import { useAtomValue, useSetAtom } from 'jotai'
@@ -35,6 +36,7 @@ export interface Props {
     collapseThreshold?: number
     hiddenButtonGroup?: boolean
     small?: boolean
+    onDelete: Function
 }
 
 export default function Message(props: Props) {
@@ -50,7 +52,12 @@ export default function Message(props: Props) {
     const currentSessionPicUrl = useAtomValue(currsentSessionPicUrlAtom)
     const setOpenSettingWindow = useSetAtom(openSettingDialogAtom)
 
-    const { msg, className, collapseThreshold, hiddenButtonGroup, small } = props
+    const { msg, className, collapseThreshold, hiddenButtonGroup, small, onDelete } = props
+
+    const handleDeleteMessage = () => {
+        const id = msg.id
+        onDelete(id)
+    }
 
     const needCollapse =
         collapseThreshold &&
@@ -98,7 +105,7 @@ export default function Message(props: Props) {
         if (msg.generating) {
             scrollActions.scrollToBottom()
         }
-    }, [msg.content])
+    }, [msg.content, msg.generating])
 
     let content = msg.content
     if (typeof msg.content !== 'string') {
@@ -197,6 +204,7 @@ export default function Message(props: Props) {
                         }
                     </Box>
                 </Grid>
+
                 <Grid item xs sm container sx={{ width: '0px', paddingRight: '15px' }}>
                     <Grid item xs>
                         <Box
@@ -213,9 +221,13 @@ export default function Message(props: Props) {
                             )}
                         </Box>
                         <MessageErrTips msg={msg} />
+                        <Typography variant="body2" sx={{ opacity: 0.5 }}></Typography>
                         {needCollapse && !isCollapsed && CollapseButton}
                         <Typography variant="body2" sx={{ opacity: 0.5, paddingBottom: '2rem' }}>
                             {tips.join(', ')}
+                            <IconButton aria-label="delete" onClick={handleDeleteMessage}>
+                                <DeleteForeverIcon sx={{ fontSize: '1rem' }} />
+                            </IconButton>
                         </Typography>
                     </Grid>
                 </Grid>

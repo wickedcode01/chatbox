@@ -103,13 +103,26 @@ export const currentSessionAtom = atom((get) => {
 export const currentSessionNameAtom = selectAtom(currentSessionAtom, (s) => s.name)
 export const currsentSessionPicUrlAtom = selectAtom(currentSessionAtom, (s) => s.picUrl)
 
-export const currentMessageListAtom = selectAtom(currentSessionAtom, (s) => {
-    let messageContext: Message[] = []
-    if (s.messages) {
-        messageContext = messageContext.concat(s.messages)
+export const currentMessageListAtom = atom(
+    (get) => {
+        const session = get(currentSessionAtom)
+        return session.messages
+    },
+    (get, set, newMessages: Message[]) => {
+        const sessions = get(sessionsAtom)
+        const currentSession = get(currentSessionAtom)
+        currentSession.messages = newMessages
+        const updatedSession = { ...currentSession, messages: newMessages } // 创建一个新的会话对象
+        const newSessions = sessions.map((i) => {
+            if (i.id === currentSession.id) {
+                return updatedSession // 使用更新后的会话对象
+            } else {
+                return i
+            }
+        })
+        set(sessionsAtom, newSessions)
     }
-    return messageContext
-})
+)
 
 // toasts
 
