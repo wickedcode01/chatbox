@@ -5,7 +5,7 @@
 
 This is the repository for the Chatbox Community Edition, open-sourced under the GPLv3 license. 
 
-Wickedcode: Hey folks, this is wicked. I've modified the code to add support for Claude and online search.
+## This branch is for personal use, so it has many differences from community edition
 
 You can also visit the original project for more details.
 
